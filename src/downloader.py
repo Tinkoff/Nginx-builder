@@ -1,0 +1,273 @@
+from requests import get
+from packaging import version
+from src import config
+from src import common_utils
+import git
+import os
+import sys
+import shutil
+import logging
+
+logger = logging.getLogger("builder")
+
+
+def download_source(src_version):
+    """
+    Загрузка архива с исходным кодом требуемой версии nginx
+    Возвращает имя скаченного файла
+    :param src_version:
+    :return file_name:
+    """
+    logger.info("Downloading nginx src...")
+    file_name = "nginx-{}.tar.gz".format(src_version)
+    url = "{}/{}".format(config.NGINX_URL, file_name)
+    logger.info("--> {}".format(url))
+    with open(os.path.join(config.SRC_PATH, file_name), "wb") as file:
+        response = get(url)
+        file.write(response.content)
+
+    return file_name
+
+
+def download_source_rpm(src_version):
+    """
+    Загрузка пакета с исходным кодом требуемой версии nginx
+    :param src_version:
+    :return:
+    """
+    logger.info("Downloading nginx src...")
+    file_name = "nginx-{}-1.el{}.ngx.src.rpm".format(src_version, config.OS_VERSION)
+    if version.parse("1.13.5") < version.parse(src_version):
+        file_name = "nginx-{}-1.el{}_4.ngx.src.rpm".format(src_version, config.OS_VERSION)
+
+    common_utils.execute_command("rpm --upgrade --verbose --hash {}/{}".format(
+        config.NGINX_SRPM_URL,
+        file_name
+    ), os.getcwd())
+
+
+def download_modules(modules):
+    """
+    Загрузка модулей
+    :param modules:
+    :return nginx_modules:
+    """
+    logger.info("Downloading 3d-party modules...")
+    nginx_modules = []
+    if modules:
+        common_utils.ensure_directory(os.path.join(config.SRC_PATH, "modules"))
+        for module in modules:
+            module = module.get('module')
+            if module.get('git_url') is not None:
+                nginx_modules.append(download_module_from_git(module))
+            elif module.get('web_url') is not None:
+                nginx_modules.append(download_module_from_web(module))
+            elif module.get('local_url') is not None:
+                nginx_modules.append(download_module_from_local(module))
+            else:
+                logger.error("Module {} have not valid key url")
+
+    return nginx_modules
+
+
+def download_module_from_git(module):
+    """
+    Загрузка репозитория с модулем
+    :param module:
+    :return:
+    """
+    repo = git.Repo()
+    downloaded_git_branchortag = "master"
+    git_url = module.get('git_url')
+    if not git_url:
+        logger.error("git_url is undefined")
+        sys.exit(1)
+
+    module_name = set_module_name(module.get('name'), git_url)
+    git_branch = module.get('git_branch')
+    git_tag = module.get('git_tag')
+
+    if git_tag:
+        logger.info("Module {} will download by tag".format(module_name))
+        downloaded_git_branchortag = git_tag
+    elif git_branch:
+        logger.info("Module {} will download by branch".format(module_name))
+        downloaded_git_branchortag = git_branch
+
+    module_dir = os.path.join(config.SRC_PATH, "modules", module_name)
+    r = repo.clone_from(git_url, module_dir, branch=downloaded_git_branchortag)
+    logger.info("-- Done: {}".format(module_name))
+
+    if r.submodules:
+        logger.info("-- Checking for {}/submodules...".format(module_name))
+        for submodule in r.submodules:
+            logger.info("-- Downloading: {}...".format(submodule))
+            submodule.update(init=True)
+            logger.info("---- Done: {}/{}".format(module_name, submodule))
+    return module_name
+
+
+def download_module_from_web(module):
+    """
+    Загрузка архива с модулем из web
+    :param module:
+    :return:
+    """
+    web_url = module.get('web_url')
+    if not web_url:
+        logger.error("web_url is undefined")
+        sys.exit(1)
+
+    module_name = set_module_name(module.get('name'), web_url)
+    file_name = web_url[web_url.rfind("/") + 1:]
+    logger.info("Module {} will downloading".format(module_name))
+    with open(os.path.join(config.SRC_PATH, "modules", file_name), "wb") as file:
+        response = get(web_url)
+        file.write(response.content)
+    module_name = common_utils.extract_archive(file_name, os.path.join(config.SRC_PATH, "modules"))
+    return module_name
+
+
+def download_module_from_local(module):
+    """
+    Загрузка модуля из локального архива
+    :param module:
+    :return:
+    """
+    local_url = module.get('local_url')
+    if not local_url:
+        logger.error("local_url is undefined")
+        sys.exit(1)
+
+    module_name = set_module_name(module.get('name'), local_url)
+    file_name = local_url[local_url("/") + 1:]
+    shutil.copy(local_url, os.path.join(config.SRC_PATH, "modules", file_name))
+    module_name = common_utils.extract_archive(file_name, os.path.join(config.SRC_PATH, "modules"))
+    return module_name
+
+
+def download_package_scripts_deb():
+    """
+    Загрузка вспомогательных скриптов для сборки deb пакета
+    :return file_name:
+    """
+    common_utils.ensure_directory(config.SRC_PATH)
+
+    logger.info("Download scripts for build deb package")
+    with open(os.path.join(config.SRC_PATH, config.DEB_PACKAGE_SCRIPTS_FILENAME), "wb") as file:
+        response = get(config.DEB_PACKAGE_SCRIPTS_URL)
+        file.write(response.content)
+
+    return config.DEB_PACKAGE_SCRIPTS_FILENAME
+
+
+def download_package_scripts_rpm():
+    """
+    Загрузка вспомогательных скриптов для сборки rpm пакета
+    :return file_name:
+    """
+    common_utils.ensure_directory(config.SRC_PATH)
+
+    file_name = None
+    logger.info("Download scripts for build rpm package")
+    common_utils.execute_command("rpmdev-setuptree", os.getcwd())
+    return file_name
+
+
+def install_deb_packages(all_deps):
+    """
+    Установка deb пакетов
+    :param all_deps:
+    :return:
+    """
+    import apt
+
+    cache = apt.cache.Cache()
+    cache.update()
+    cache.open(None)
+
+    for dependency in all_deps:
+        pkg = cache[dependency]
+        if pkg.is_installed:
+            logger.warning("'{}' already installed".format(dependency))
+            continue
+
+        pkg.mark_install()
+        try:
+            cache.commit()
+        except SystemError as err:
+            logger.error("Failed to download %s. Cause %s",
+                         (dependency, err))
+
+
+def download_dependencies_deb(modules):
+    """
+    Установка зависимостей, если они есть
+    :param modules:
+    :return dependencies_all:
+    """
+    logger.info("Downloading dependencies")
+    dependencies_all = set()
+    if not modules:
+        return list(dependencies_all)
+
+    for module in modules:
+        module = module.get('module', {})
+        dependencies = module.get('dependencies', [])
+        dependencies_all.update(dependencies)
+
+    dependencies_list = list(dependencies_all)
+    if dependencies_list:
+        install_deb_packages(dependencies_list)
+
+    return dependencies_list
+
+
+def install_rpm_packages(all_deps):
+    """
+    Установка rpm пакетов
+    :param all_deps:
+    :return:
+    """
+
+    install_command = ['yum', 'install', '--assumeyes']
+    install_command.extend(all_deps)
+    common_utils.execute_command(
+        " ".join(install_command),
+        os.getcwd()
+    )
+
+
+def download_dependencies_rpm(modules):
+    """
+    Установка зависимостей
+    :param modules:
+    :return:
+    """
+    logger.info("Download dependencies")
+    dependencies_all = set()
+    if not modules:
+        return list(dependencies_all)
+    for module in modules:
+        module = module.get('module', {})
+        dependencies = module.get('dependencies', [])
+        dependencies_all.update(dependencies)
+
+    dependencies_list = list(dependencies_all)
+    if dependencies_list:
+        install_rpm_packages(dependencies_list)
+
+    return dependencies_list
+
+
+def set_module_name(module_name, url):
+    """
+    Установка имени модуля из имеющихся данных
+    :param module_name:
+    :param url:
+    :return:
+    """
+    if not module_name:
+        module_name = url[url.rfind("/") + 1:].rsplit(".", 1)[0]
+
+    return module_name
