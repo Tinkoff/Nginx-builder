@@ -37,7 +37,7 @@ def download_source_rpm(src_version):
     """
     logger.info("Downloading nginx src...")
     file_name = "nginx-{}-1.el{}.ngx.src.rpm".format(src_version, config.OS_VERSION)
-    if version.parse("1.13.5") < version.parse(src_version):
+    if version.parse("1.13.5") < version.parse(src_version) < version.parse("1.15.11"):
         file_name = "nginx-{}-1.el{}_4.ngx.src.rpm".format(src_version, config.OS_VERSION)
 
     common_utils.execute_command("rpm --upgrade --verbose --hash {}/{}".format(
