@@ -42,7 +42,7 @@ def get_src_rpm_filename(url, src_version):
         response_text = response.text
         soup = BeautifulSoup(response_text, 'html.parser')
         for node in soup.find_all('a'):
-            if node.get('href').endswith('rpm') and "nginx-{}".format(src_version) in node.get('href'):
+            if node.get('href').endswith('rpm') and "nginx-{}-".format(src_version) in node.get('href'):
                 file_name = node.get('href')
 
     elif 400 <= response.status_code < 500:
