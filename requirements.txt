@@ -3,3 +3,4 @@ requests==2.20.0
 GitPython==2.1.9
 distro==1.3.0
 packaging==19.0
+beautifulsoup4==4.7.1
