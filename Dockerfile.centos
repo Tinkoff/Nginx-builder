@@ -3,8 +3,8 @@ FROM centos:7
 LABEL maintainer="devops@tinkoff.ru"
 
 RUN yum install -y rpmdevtools gcc make automake yum-utils git redhat-lsb-core \
-    openssl-devel zlib-devel pcre-devel epel-release
-RUN yum install -y python36 python36-devel python36-pip \
+    openssl-devel zlib-devel pcre-devel epel-release \
+    && yum install -y python36 python36-devel python36-pip \
     && yum clean all
 
 # Set locales
