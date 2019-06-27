@@ -64,8 +64,8 @@ DEFAULT_CONFIGURE_PARAMS = [
     "--with-stream",
     "--with-stream_realip_module",
     "--with-stream_ssl_preread_module",
-    "--with-cc-opt=\"$(CFLAGS)\"",
-    "--with-ld-opt=\"$(LDFLAGS)\""
+    "--with-cc-opt=\"${CFLAGS}\"",
+    "--with-ld-opt=\"${LDFLAGS}\""
 ]
 
 # Путь к директории с модулями для файла rules
