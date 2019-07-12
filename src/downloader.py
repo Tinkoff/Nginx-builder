@@ -22,6 +22,7 @@ def get_url_paths(url, ext='rpm', params={}):
     parent = [url + node.get('href') for node in soup.find_all('a') if node.get('href').endswith(ext)]
     return parent
 
+ext = 'rpm'
 result = get_url_paths(config.NGINX_STABLE_SRPM_URL, ext)
 list_stable_version = []
 for i in result:
