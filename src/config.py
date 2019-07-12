@@ -10,7 +10,8 @@ OS_VERSION = distro.lsb_release_attr('release')[0]
 
 # Адрес загрузки исходного кода nginx
 NGINX_URL = "http://nginx.org/download"
-NGINX_SRPM_URL = "http://nginx.org/packages/mainline/centos/{}/SRPMS".format(OS_VERSION)
+NGINX_MAINLINE_SRPM_URL = "http://nginx.org/packages/mainline/centos/{}/SRPMS".format(OS_VERSION)
+NGINX_STABLE_SRPM_URL = "http://nginx.org/packages/centos/{}/SRPMS".format(OS_VERSION)
 
 # Версия архива со скриптами
 PACKAGE_SCRIPTS_VERSION = "1.13.9"

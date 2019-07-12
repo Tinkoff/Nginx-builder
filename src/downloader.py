@@ -66,12 +66,22 @@ def download_source_rpm(src_version):
     :return:
     """
     logger.info("Downloading nginx src...")
-    file_name = get_src_rpm_filename(config.NGINX_SRPM_URL, src_version)
+    list_stable_verion = ['1.14.1','1.16.0']
+    if src_version in list_stable_verion:
+        file_name = get_src_rpm_filename(config.NGINX_STABLE_SRPM_URL, src_version)
+    else:
+        file_name = get_src_rpm_filename(config.NGINX_MAINLINE_SRPM_URL, src_version)
 
-    common_utils.execute_command("rpm --upgrade --verbose --hash {}/{}".format(
-        config.NGINX_SRPM_URL,
-        file_name
-    ), os.getcwd())
+    if src_version in list_stable_verion:
+        common_utils.execute_command("rpm --upgrade --verbose --hash {}/{}".format(
+            config.NGINX_STABLE_SRPM_URL,
+            file_name
+        ), os.getcwd())
+    else:
+        common_utils.execute_command("rpm --upgrade --verbose --hash {}/{}".format(
+            config.NGINX_MAINLINE_SRPM_URL,
+            file_name
+        ), os.getcwd())
 
 
 def download_modules(modules):
