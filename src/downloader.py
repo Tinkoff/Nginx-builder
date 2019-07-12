@@ -82,13 +82,13 @@ def download_source_rpm(src_version):
     :return:
     """
     logger.info("Downloading nginx src...")
-    # list_stable_verion = ['1.14.1','1.16.0']
-    if src_version in list_stable_verion:
+    # list_stable_version = ['1.14.1','1.16.0']
+    if src_version in list_stable_version:
         file_name = get_src_rpm_filename(config.NGINX_STABLE_SRPM_URL, src_version)
     else:
         file_name = get_src_rpm_filename(config.NGINX_MAINLINE_SRPM_URL, src_version)
 
-    if src_version in list_stable_verion:
+    if src_version in list_stable_version:
         common_utils.execute_command("rpm --upgrade --verbose --hash {}/{}".format(
             config.NGINX_STABLE_SRPM_URL,
             file_name
