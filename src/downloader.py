@@ -12,6 +12,21 @@ from bs4 import BeautifulSoup
 
 logger = logging.getLogger("builder")
 
+def get_url_paths(url, ext='rpm', params={}):
+    response = requests.get(url, params=params)
+    if response.ok:
+        response_text = response.text
+    else:
+        return response.raise_for_status()
+    soup = BeautifulSoup(response_text, 'html.parser')
+    parent = [url + node.get('href') for node in soup.find_all('a') if node.get('href').endswith(ext)]
+    return parent
+
+result = get_url_paths(config.NGINX_STABLE_SRPM_URL, ext)
+list_stable_version = []
+for i in result:
+    if 'module' not in i:
+        list_stable_version.append(i.split("-")[1])
 
 def download_source(src_version):
     """
@@ -66,7 +81,7 @@ def download_source_rpm(src_version):
     :return:
     """
     logger.info("Downloading nginx src...")
-    list_stable_verion = ['1.14.1','1.16.0']
+    # list_stable_verion = ['1.14.1','1.16.0']
     if src_version in list_stable_verion:
         file_name = get_src_rpm_filename(config.NGINX_STABLE_SRPM_URL, src_version)
     else:
