@@ -36,7 +36,7 @@ def build_deb(config, revision):
     :param revision:
     :return:
     """
-    scripts_archive_name = downloader.download_package_scripts_deb()
+    scripts_archive_name = downloader.download_package_scripts_deb(config["nginx_version"])
     src_archive_name = downloader.download_source(config["nginx_version"])
     downloaded_modules = downloader.download_modules(config["modules"])
     downloader.download_dependencies_deb(config["modules"])
