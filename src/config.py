@@ -10,17 +10,12 @@ OS_VERSION = distro.lsb_release_attr('release')[0]
 
 # Адрес загрузки исходного кода nginx
 NGINX_URL = "http://nginx.org/download"
-NGINX_SRPM_URL = "http://nginx.org/packages/mainline/centos/{}/SRPMS".format(OS_VERSION)
+NGINX_SRPM_URL_MAINLINE = "http://nginx.org/packages/mainline/centos/{}/SRPMS".format(OS_VERSION)
+NGINX_SRPM_URL_STABLE = "http://nginx.org/packages/centos/{}/SRPMS".format(OS_VERSION)
 
-# Версия архива со скриптами
-PACKAGE_SCRIPTS_VERSION = "1.13.9"
 # Архив со скриптами для создания пакета
-DEB_PACKAGE_SCRIPTS_URL = "http://nginx.org/packages/mainline/{}/pool/nginx/n/nginx/nginx_{}-1~{}.debian.tar.xz".format(
-    OS_DISTRIBUTION,
-    PACKAGE_SCRIPTS_VERSION,
-    OS_RELEASE
-)
-DEB_PACKAGE_SCRIPTS_FILENAME = DEB_PACKAGE_SCRIPTS_URL[DEB_PACKAGE_SCRIPTS_URL.rfind("/") + 1:]
+DEB_PACKAGE_SCRIPTS_URL_MAINLINE = "http://nginx.org/packages/mainline/{}/pool/nginx/n/nginx".format(OS_DISTRIBUTION)
+DEB_PACKAGE_SCRIPTS_URL_STABLE = "http://nginx.org/packages/{}/pool/nginx/n/nginx".format(OS_DISTRIBUTION)
 
 # Путь до директории сборки пакета
 SRC_PATH = "/usr/src/nginx"

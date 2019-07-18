@@ -97,7 +97,7 @@ def prepare_changelog(source_dir, version, revision):
     with open('{}/changelog'.format(source_dir), 'r') as input_file:
         content_file = input_file.readlines()
     with open('{}/changelog'.format(source_dir), 'w') as output_file:
-        replace_line = "nginx ({}-1~".format(config.PACKAGE_SCRIPTS_VERSION)
+        replace_line = "nginx ({}-1~".format(version)
         for line in content_file:
             if replace_line in line:
                 line = "nginx ({}-{}) {}; urgency=low\n".format(version, revision, config.OS_RELEASE)

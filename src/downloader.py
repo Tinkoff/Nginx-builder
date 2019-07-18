@@ -46,18 +46,18 @@ def get_src_rpm_filename(url, src_version):
                 file_name = node.get('href')
 
     elif 400 <= response.status_code < 500:
-            logger.error(u'%s Client Error: %s for url: %s' % (response.status_code, response.reason, url))
-            sys.exit(1)
-
+        logger.error(u"{} Client Error: {} for url: {}".format(response.status_code, response.reason, url))
+        sys.exit(1)
     elif 500 <= response.status_code < 600:
-            logger.error(u'%s Server Error: %s for url: %s' % (response.status_code, response.reason, url))
-            sys.exit(1)
+        logger.error(u"{} Server Error: {} for url: {}".format(response.status_code, response.reason, url))
+        sys.exit(1)
 
     if 'file_name' in locals():
         return file_name
     else:
         logger.error("Cannot find nginx source rpm(SRPM) with version {} in url {}".format(src_version, url))
         sys.exit(1)
+
 
 def download_source_rpm(src_version):
     """
@@ -66,10 +66,13 @@ def download_source_rpm(src_version):
     :return:
     """
     logger.info("Downloading nginx src...")
-    file_name = get_src_rpm_filename(config.NGINX_SRPM_URL, src_version)
+    nginx_srpm_url = config.NGINX_SRPM_URL_MAINLINE
+    if version.parse(src_version).release[1] % 2 == 0:
+        nginx_srpm_url = config.NGINX_SRPM_URL_STABLE
 
+    file_name = get_src_rpm_filename(nginx_srpm_url, src_version)
     common_utils.execute_command("rpm --upgrade --verbose --hash {}/{}".format(
-        config.NGINX_SRPM_URL,
+        nginx_srpm_url,
         file_name
     ), os.getcwd())
 
@@ -174,19 +177,38 @@ def download_module_from_local(module):
     return module_name
 
 
-def download_package_scripts_deb():
+def download_package_scripts_deb(src_version):
     """
     Загрузка вспомогательных скриптов для сборки deb пакета
     :return file_name:
     """
     common_utils.ensure_directory(config.SRC_PATH)
+    deb_package_scripts_filename = "nginx_{}-1~{}.debian.tar.xz".format(
+        src_version,
+        config.OS_RELEASE
+    )
+    deb_package_scripts_url = "{}/{}".format(
+        config.DEB_PACKAGE_SCRIPTS_URL_MAINLINE,
+        deb_package_scripts_filename
+    )
+    if version.parse(src_version).release[1] % 2 == 0:
+        deb_package_scripts_url = "{}/{}".format(
+            config.DEB_PACKAGE_SCRIPTS_URL_STABLE,
+            deb_package_scripts_filename
+        )
 
     logger.info("Download scripts for build deb package")
-    with open(os.path.join(config.SRC_PATH, config.DEB_PACKAGE_SCRIPTS_FILENAME), "wb") as file:
-        response = get(config.DEB_PACKAGE_SCRIPTS_URL)
+    with open(os.path.join(config.SRC_PATH, deb_package_scripts_filename), "wb") as file:
+        response = get(deb_package_scripts_url)
+        if 400 <= response.status_code < 500:
+            logger.error(u"{} Client Error: {} for url: {}".format(response.status_code, response.reason, deb_package_scripts_url))
+            sys.exit(1)
+        elif 500 <= response.status_code < 600:
+            logger.error(u"{} Server Error: {} for url: {}".format(response.status_code, response.reason, deb_package_scripts_url))
+            sys.exit(1)
         file.write(response.content)
 
-    return config.DEB_PACKAGE_SCRIPTS_FILENAME
+    return deb_package_scripts_filename
 
 
 def download_package_scripts_rpm():
