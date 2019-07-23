@@ -2,28 +2,47 @@ nginx_version: 1.13.9
 output_package: rpm
 modules:
   - module:
-      name: nginx-auth-ldap
-      git_url: https://github.com/kvspb/nginx-auth-ldap.git
-      git_branch: master
-      dependencies:
-        - openldap-devel
-  - module:
-      name: ngx_http_substitutions_filter_module
-      git_url: https://github.com/yaoweibin/ngx_http_substitutions_filter_module.git
-  - module:
-      name: headers-more-nginx-module
-      web_url: https://github.com/openresty/headers-more-nginx-module/archive/v0.261.zip
-  - module:
-      name: nginx-module-vts
-      git_url: https://github.com/vozlt/nginx-module-vts.git
-      git_tag: v0.1.18
-  - module:
-      name: ngx_devel_kit
-      git_url: https://github.com/simplresty/ngx_devel_kit.git
-      git_tag: v0.3.0
-  - module:
-      name: ngx_cache_purge
-      git_url: https://github.com/FRiCKLE/ngx_cache_purge.git
-  - module:
       name: ngx_http_dyups_module
       git_url: https://github.com/yzprofile/ngx_http_dyups_module.git
+  - module:
+      name: http_gzip_static
+      type: embedded
+  - module:
+      name: http_v2
+      type: embedded
+  - module:
+      name: http_ssl
+      type: embedded
+  - module:
+      name: http_addition
+      type: embedded
+  - module:
+      name: http_auth_request
+      type: embedded
+  - module:
+      name: http_gunzip
+      type: embedded
+  - module:
+      name: http_gzip_static
+      type: embedded
+  - module:
+      name: http_realip
+      type: embedded
+  - module:
+      name: http_secure_link
+      type: embedded
+  - module:
+      name: http_slice
+      type: embedded
+  - module:
+      name: http_stub_status
+      type: embedded
+  - module:
+      name: http_sub
+      type: embedded
+  - module:
+      name: stream_realip
+      type: embedded
+  - module:
+      name: stream_ssl_preread
+      type: embedded
