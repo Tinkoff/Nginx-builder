@@ -27,3 +27,45 @@ modules:
   - module:
       name: ngx_http_dyups_module
       git_url: https://github.com/yzprofile/ngx_http_dyups_module.git
+  - module:
+      name: http_gzip_static
+      type: embedded
+  - module:
+      name: http_v2
+      type: embedded
+  - module:
+      name: http_ssl
+      type: embedded
+  - module:
+      name: http_addition
+      type: embedded
+  - module:
+      name: http_auth_request
+      type: embedded
+  - module:
+      name: http_gunzip
+      type: embedded
+  - module:
+      name: http_gzip_static
+      type: embedded
+  - module:
+      name: http_realip
+      type: embedded
+  - module:
+      name: http_secure_link
+      type: embedded
+  - module:
+      name: http_slice
+      type: embedded
+  - module:
+      name: http_stub_status
+      type: embedded
+  - module:
+      name: http_sub
+      type: embedded
+  - module:
+      name: stream_realip
+      type: embedded
+  - module:
+      name: stream_ssl_preread
+      type: embedded

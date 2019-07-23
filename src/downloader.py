@@ -95,6 +95,8 @@ def download_modules(modules):
                 nginx_modules.append(download_module_from_web(module))
             elif module.get('local_url') is not None:
                 nginx_modules.append(download_module_from_local(module))
+            elif module.get('type') == "embedded":
+                download_module_embedded(module)
             else:
                 logger.error("Module {} have not valid key url")
 
@@ -175,6 +177,16 @@ def download_module_from_local(module):
     shutil.copy(local_url, os.path.join(config.SRC_PATH, "modules", file_name))
     module_name = common_utils.extract_archive(file_name, os.path.join(config.SRC_PATH, "modules"))
     return module_name
+
+
+def download_module_embedded(module):
+    """
+    Установка втроенного модуля
+    :param module:
+    :return:
+    """
+    if module.get('name') is not None:
+        config.DEFAULT_CONFIGURE_PARAMS.append("--with-{}_module".format(module.get('name')))
 
 
 def download_package_scripts_deb(src_version):
