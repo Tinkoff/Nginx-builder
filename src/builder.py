@@ -112,6 +112,8 @@ def prepare_rules(source_dir, downloaded_modules):
     :return:
     """
     configure_command = ["./configure"] + config.DEFAULT_CONFIGURE_PARAMS
+    configure_command.append("--user={}".format(config.DEFAULT_RUN_USER))
+    configure_command.append("--group={}".format(config.DEFAULT_RUN_GROUP))
     for module in downloaded_modules:
         configure_command.append("--add-module=$(MODULESDIR)/{}".format(module))
     configure_command = " ".join(configure_command)
@@ -139,6 +141,8 @@ def prepare_rules_rpm(source_dir, downloaded_modules, modules_dir, revision):
     :return:
     """
     configure_command = ["./configure"] + config.DEFAULT_CONFIGURE_PARAMS
+    configure_command.append("--user={}".format(config.DEFAULT_RUN_USER))
+    configure_command.append("--group={}".format(config.DEFAULT_RUN_GROUP))
     for module in downloaded_modules:
         configure_command.append("--add-module={}/{}".format(modules_dir, module))
     configure_command = " ".join(configure_command)
@@ -151,6 +155,10 @@ def prepare_rules_rpm(source_dir, downloaded_modules, modules_dir, revision):
                 line = configure_command
             if "%define main_release" in line:
                 line = "%define main_release {}.ngx".format(revision)
+            if "%define nginx_user" in line:
+                line = "%define nginx_user {}".format(config.DEFAULT_RUN_USER)
+            if "%define nginx_group" in line:
+                line = "%define nginx_group {}".format(config.DEFAULT_RUN_GROUP)
             output_file.write(line)
 
 

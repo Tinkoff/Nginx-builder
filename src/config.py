@@ -39,8 +39,6 @@ DEFAULT_CONFIGURE_PARAMS = [
     "--http-uwsgi-temp-path=/var/cache/nginx/uwsgi_temp",
     "--http-scgi-temp-path=/var/cache/nginx/scgi_temp",
     "--with-debug",
-    "--user=nginx",
-    "--group=nginx",
     "--with-pcre-jit",
     "--with-compat",
     "--with-file-aio",
@@ -49,6 +47,10 @@ DEFAULT_CONFIGURE_PARAMS = [
     "--with-cc-opt=\"${CFLAGS}\"",
     "--with-ld-opt=\"${LDFLAGS}\""
 ]
+
+# Пользователь и группа запуска по умолчанию
+DEFAULT_RUN_USER = "nginx"
+DEFAULT_RUN_GROUP = "nginx"
 
 # Путь к директории с модулями для файла rules
 MODULESDIR = 'export MODULESDIR = $(CURDIR)/debian/modules'

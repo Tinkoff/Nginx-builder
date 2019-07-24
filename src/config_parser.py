@@ -1,7 +1,9 @@
 import yaml
 import sys
 from collections import OrderedDict
+from src import config
 import logging
+
 
 logger = logging.getLogger("builder")
 
@@ -47,6 +49,10 @@ def parse_yaml(file_name):
         config['control'] = None
     if not config.get('modules'):
         config['modules'] = None
+    if not config.get('run_user'):
+        config['run_user'] = config.DEFAULT_RUN_USER
+    if not config.get('run_group'):
+        config['run_group'] = config.DEFAULT_RUN_GROUP
     return config
 
 

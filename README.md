@@ -20,6 +20,8 @@ pip3 install -r requirements.txt
 ---
 nginx_version: необходимая версия nginx
 output_package: тип выходного пакета deb или rpm
+run_user: пользователь для запуска (если не указано - nginx)
+run_group: группа для запуска (если не указано - nginx)
 modules:
   - module:
       name: Название модуля. Если не указано, берется из последней части URL
