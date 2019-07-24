@@ -89,7 +89,10 @@ def download_modules(modules):
         common_utils.ensure_directory(os.path.join(config.SRC_PATH, "modules"))
         for module in modules:
             module = module.get('module')
-            if module.get('git_url') is not None:
+            if module.get('type') == "embedded" and module.get('git_url') is not None:
+                nginx_modules.append(download_module_from_git(module))
+                download_module_embedded(module)
+            elif module.get('git_url') is not None:
                 nginx_modules.append(download_module_from_git(module))
             elif module.get('web_url') is not None:
                 nginx_modules.append(download_module_from_web(module))
@@ -186,7 +189,7 @@ def download_module_embedded(module):
     :return:
     """
     if module.get('name') is not None:
-        config.DEFAULT_CONFIGURE_PARAMS.append("--with-{}_module".format(module.get('name')))
+        config.DEFAULT_CONFIGURE_PARAMS.append("--with-{}".format(module.get('name')))
 
 
 def download_package_scripts_deb(src_version):
