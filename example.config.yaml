@@ -2,6 +2,29 @@ nginx_version: 1.13.9
 output_package: rpm
 modules:
   - module:
+      name: nginx-auth-ldap
+      git_url: https://github.com/kvspb/nginx-auth-ldap.git
+      git_branch: master
+      dependencies:
+        - openldap-devel
+  - module:
+      name: ngx_http_substitutions_filter_module
+      git_url: https://github.com/yaoweibin/ngx_http_substitutions_filter_module.git
+  - module:
+      name: headers-more-nginx-module
+      web_url: https://github.com/openresty/headers-more-nginx-module/archive/v0.261.zip
+  - module:
+      name: nginx-module-vts
+      git_url: https://github.com/vozlt/nginx-module-vts.git
+      git_tag: v0.1.18
+  - module:
+      name: ngx_devel_kit
+      git_url: https://github.com/simplresty/ngx_devel_kit.git
+      git_tag: v0.3.0
+  - module:
+      name: ngx_cache_purge
+      git_url: https://github.com/FRiCKLE/ngx_cache_purge.git
+  - module:
       name: ngx_http_dyups_module
       git_url: https://github.com/yzprofile/ngx_http_dyups_module.git
   - module:
