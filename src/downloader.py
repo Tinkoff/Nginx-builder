@@ -186,7 +186,7 @@ def download_module_embedded(module):
     :return:
     """
     if module.get('name') is not None:
-        config.DEFAULT_CONFIGURE_PARAMS.append("--with-{}_module".format(module.get('name')))
+        config.DEFAULT_CONFIGURE_PARAMS.append("--with-{}".format(module.get('name')))
 
 
 def download_package_scripts_deb(src_version):
