@@ -1,20 +1,56 @@
 # Nginx-builder
 
-### Описание
+## Description/Описание
+### ENG
+Tool for building `deb` or `rpm` package [Nginx] (http://nginx.org/) of the required version from the source code, with the ability to connect third-party modules.
+Nginx parameters are set in the configuration file of yaml format.
+
+### RU
 Инструмент для сборки `deb` или `rpm` пакета [Nginx](http://nginx.org/) требуемой  версии из исходных кодов, с возможностью подключения сторонних модулей.
 Параметры Nginx задаются в конфигурационном файле формата yaml.
 
-### Требования
+## Requirements/Требования
 * python >= 3.5
 
-### Установка зависимостей
+## Dependency installation/Установка зависимостей
 
 ```bash
 pip3 install -r requirements.txt
 ```
+### ENG
+You will also need packages to compile Nginx. Their list can be seen in the Dockerfile.
+
+### RU
 Также потребуются пакеты для компиляции Nginx. Их перечень можно увидеть в Dockerfile
 
-### Конфигурация
+## Конфигурация
+### ENG
+The main configuration file is in yaml format. Description of parameters:
+```yaml
+---
+nginx_version: the necessary version of nginx
+output_package: type of output package deb or rpm
+modules:
+  - module:
+      name: The name of the module. If not specified, taken from the last part of the URL
+      git_url: git file URL
+      git_tag: The name of the tag. (Optional)
+      git_branch: The name of the branch. (Optional). If neither tag nor branch is specified, the master branch is taken by default
+      dependencies: 
+        - list of dependencies for building the module (Optional)
+    module:
+      name: The name of the module. If not specified, taken from the last part of the URL
+      web_url: Link to the archive with the module source code
+    module:
+      name: The name of the module. If not specified, taken from the last part of the URL
+      local_url: Path to the module source code archive
+    module:
+      name: The name of the embedded module
+      type: embedded  
+```
+The configuration file with advanced settings is located in `src/config.py`. In most cases it does not need to be changed.
+
+### RU
 Основной конфигурационный файл в yaml формате. Описание параметров:
 ```yaml
 ---
@@ -38,21 +74,31 @@ modules:
       name: Название модуля встроенного модуля
       type: embedded  
 ```
-
 Конфигурационный файл с расширенными настройками расположен в `src/config.py`. В большинстве случаев менять его не нужно.
 
 
-### Параметры запуска
+## Execution options/Параметры запуска
+### ENG
+You can start the assembler both directly on the host machine and in the docker container, for example
+
+### RU
 Запускать сборщик можно, как непосредственно на хост машине, так и в docker контейнере, например
+
 ```bash
 docker build -t nginx-builder .
 docker run --rm -it -v $(pwd):/nginx-builder:rw \
   nginx-builder /bin/bash
 ```
 
-Запуск
+## Еxecution/Запуск
+### ENG
+```bash
+./main.py build -f [config_file].yaml -r [revision_number]
+```
+* revision number optional parameter, used to version assemblies
+
+### RU
 ```bash
 ./main.py build -f [конфиг_файл].yaml -r [номер_ревизии]
 ```
-
 * номер ревизии опциональный параметр, служит для версионирования сборок
