@@ -1,8 +1,7 @@
 #!/bin/bash
-set -eu
-set -o pipefail
+set -eux -o pipefail
 
-docker login -e "${DOCKER_EMAIL}" -u "${DOCKER_USER}" -p "${DOCKER_PASS}"
+docker login -u "${DOCKER_USER}" -p "${DOCKER_PASS}"
 if [ "${TRAVIS_BRANCH}" = "master" ]; then
     TAG="latest"
 else
