@@ -1,15 +1,20 @@
 #!/bin/sh
-docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASS
-if [ "$TRAVIS_BRANCH" = "master" ]; then
+set -eu
+
+docker login -e "${DOCKER_EMAIL}" -u "${DOCKER_USER}" -p "${DOCKER_PASS}"
+if [ "${TRAVIS_BRANCH}" = "master" ]; then
     TAG="latest"
 else
-    TAG="$TRAVIS_BRANCH"
+    TAG=${TRAVIS_BRANCH}
 fi
 
+lowercased_TRAVIS_REPO_SLUG=$(echo "${TRAVIS_REPO_SLUG}" | tr '[:upper:]' '[:lower:]')
+lowercased_TAG=$(echo "${TAG}" | tr '[:upper:]' '[:lower:]')
+
 #Publish Centos
-docker build -f centos -t $TRAVIS_REPO_SLUG:$TAG .
-docker push $TRAVIS_REPO_SLUG
+docker build --no-cache -f Dockerfile.centos -t "${lowercased_TRAVIS_REPO_SLUG}:centos-${lowercased_TAG}" .
+docker push "${lowercased_TRAVIS_REPO_SLUG}:centos-${lowercased_TAG}"
 
 #Publish Ubuntu
-docker build -f Dockerfile -t $TRAVIS_REPO_SLUG:$TAG .
-docker push $TRAVIS_REPO_SLUG
+docker build --no-cache -f Dockerfile.ubuntu -t "${lowercased_TRAVIS_REPO_SLUG}:ubuntu-${lowercased_TAG}" .
+docker push "${lowercased_TRAVIS_REPO_SLUG}:ubuntu-${lowercased_TAG}"
