@@ -7,9 +7,9 @@ else
 fi
 
 #Publish Centos
-docker build -f Dockerfile.centos -t $TRAVIS_REPO_SLUG:centos-$TAG .
+docker build -f centos -t $TRAVIS_REPO_SLUG:$TAG .
 docker push $TRAVIS_REPO_SLUG
 
 #Publish Ubuntu
-docker build -f Dockerfile.ubuntu -t $TRAVIS_REPO_SLUG:ubuntu-$TAG .
+docker build -f Dockerfile -t $TRAVIS_REPO_SLUG:$TAG .
 docker push $TRAVIS_REPO_SLUG
