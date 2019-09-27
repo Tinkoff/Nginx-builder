@@ -19,3 +19,4 @@ docker push "${lowercased_TRAVIS_REPO_SLUG}:centos-${lowercased_TAG}"
 #Publish Ubuntu
 docker build --no-cache -f Dockerfile.ubuntu -t "${lowercased_TRAVIS_REPO_SLUG}:ubuntu-${lowercased_TAG}" .
 docker push "${lowercased_TRAVIS_REPO_SLUG}:ubuntu-${lowercased_TAG}"
+
