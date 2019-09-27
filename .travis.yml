@@ -1,5 +1,8 @@
 sudo: required
 
+# Only build tags
+if: tag IS present
+
 services:
   - docker
 
