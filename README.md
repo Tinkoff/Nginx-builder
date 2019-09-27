@@ -1,4 +1,5 @@
 # Nginx-builder
+[![Build Status](https://travis-ci.org/TinkoffCreditSystems/Nginx-builder.svg?branch=master)](https://travis-ci.org/TinkoffCreditSystems/Nginx-builder)
 
 ## Description/Описание
 ### ENG
