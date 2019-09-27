@@ -6,4 +6,4 @@ services:
 language: minimal
 
 script:
-  - sh .travis/deploy_dockerhub.sh
+  - bash .travis/deploy_dockerhub.sh
