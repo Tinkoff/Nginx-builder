@@ -1,0 +1,9 @@
+sudo: required
+
+services:
+  - docker
+
+language: minimal
+
+script:
+  - sh .travis/deploy_dockerhub.sh
