@@ -1,4 +1,5 @@
 # Nginx-builder
+[![Build Status](https://travis-ci.org/TinkoffCreditSystems/Nginx-builder.svg?branch=master)](https://travis-ci.org/TinkoffCreditSystems/Nginx-builder)
 
 ## Description/Описание
 ### ENG
@@ -9,19 +10,26 @@ Nginx parameters are set in the configuration file of yaml format.
 Инструмент для сборки `deb` или `rpm` пакета [Nginx](http://nginx.org/) требуемой  версии из исходных кодов, с возможностью подключения сторонних модулей.
 Параметры Nginx задаются в конфигурационном файле формата yaml.
 
-## Requirements/Требования
-* python >= 3.5
-
-## Dependency installation/Установка зависимостей
-
-```bash
-pip3 install -r requirements.txt
-```
+## Docker
 ### ENG
-You will also need packages to compile Nginx. Their list can be seen in the Dockerfile.
+Now we are at the Docker hub:
+https://cloud.docker.com/repository/docker/tinkoffcreditsystems/nginx-builder
 
 ### RU
-Также потребуются пакеты для компиляции Nginx. Их перечень можно увидеть в Dockerfile
+Теперь мы есть и на Docker hub:
+https://cloud.docker.com/repository/docker/tinkoffcreditsystems/nginx-builder
+
+## Execution options/Параметры запуска
+### ENG
+You can start the assembler both directly on the host machine and in the docker container, for example
+
+### RU
+Запускать сборщик можно, как непосредственно на хост машине, так и в docker контейнере, например
+
+### Example run/Пример запуска
+```bash
+docker run --rm -it -v $(pwd):/nginx-builder:rw tinkoffcreditsystems/nginx-builder /bin/bash
+```
 
 ## Конфигурация
 ### ENG
@@ -77,28 +85,23 @@ modules:
 Конфигурационный файл с расширенными настройками расположен в `src/config.py`. В большинстве случаев менять его не нужно.
 
 
-## Execution options/Параметры запуска
+## Manual script execution/Ручной запуск скрипта
+
+### Requirements/Требования
+* python >= 3.5
+
 ### ENG
-You can start the assembler both directly on the host machine and in the docker container, for example
-
-### RU
-Запускать сборщик можно, как непосредственно на хост машине, так и в docker контейнере, например
-
+You will also need packages to compile Nginx. Their list can be seen in the Dockerfile.
 ```bash
-docker build -t nginx-builder .
-docker run --rm -it -v $(pwd):/nginx-builder:rw \
-  nginx-builder /bin/bash
-```
-
-## Еxecution/Запуск
-### ENG
-```bash
+pip3 install -r requirements.txt
 ./main.py build -f [config_file].yaml -r [revision_number]
 ```
 * revision number optional parameter, used to version assemblies
 
 ### RU
+Также потребуются пакеты для компиляции Nginx. Их перечень можно увидеть в Dockerfile
 ```bash
+pip3 install -r requirements.txt
 ./main.py build -f [конфиг_файл].yaml -r [номер_ревизии]
 ```
 * номер ревизии опциональный параметр, служит для версионирования сборок

@@ -1,0 +1,12 @@
+sudo: required
+
+# Only build only master branch and tags
+if: $TRAVIS_BRANCH == "master" || -n $TRAVIS_TAG
+
+services:
+  - docker
+
+language: minimal
+
+script:
+  - bash .travis/deploy_dockerhub.sh
