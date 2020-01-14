@@ -3,10 +3,10 @@ import platform
 
 
 # Параметры системы
-OS_RELEASE = distro.lsb_release_attr('codename')
+OS_RELEASE = distro.codename().split(' ')[0].lower()
 PLATFORM_ARCH = platform.machine()
-OS_DISTRIBUTION = distro.lsb_release_attr('distributor_id').lower()
-OS_VERSION = distro.lsb_release_attr('release')[0]
+OS_DISTRIBUTION = distro.id().lower()
+OS_VERSION = distro.major_version()
 
 # Адрес загрузки исходного кода nginx
 NGINX_URL = "http://nginx.org/download"
