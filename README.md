@@ -26,9 +26,10 @@ You can start the assembler both directly on the host machine and in the docker 
 ### RU
 Запускать сборщик можно, как непосредственно на хост машине, так и в docker контейнере, например
 
-### Example run/Пример запуска
+### Example run/Пример запуска в docker образе "ubuntu-latest" или в "centos-latest
 ```bash
-docker run --rm -it -v $(pwd):/nginx-builder:rw tinkoffcreditsystems/nginx-builder /bin/bash
+docker run --rm -it -v $(pwd):/nginx-builder:rw tinkoffcreditsystems/nginx-builder:centos-latest /bin/bash
+docker run --rm -it -v $(pwd):/nginx-builder:rw tinkoffcreditsystems/nginx-builder:ubuntu-latest /bin/bash
 ```
 
 ## Конфигурация
