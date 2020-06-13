@@ -10,7 +10,8 @@ import logging
 logger = logging.getLogger("builder")
 
 
-def build_deb(version, src_archive_name, downloaded_modules, scripts_archive_name, control_file_params, revision):
+def build_deb(version, src_archive_name, downloaded_modules,
+              scripts_archive_name, control_file_params, revision, configure_params):
     """
     Сборка deb пакета
     :param version:
@@ -19,7 +20,7 @@ def build_deb(version, src_archive_name, downloaded_modules, scripts_archive_nam
     :param scripts_archive_name:
     :param control_file_params:
     :param revision:
-    :return:
+    :return: configure_params
     """
     logger.info("Building .deb package")
     common_utils.extract_archive(src_archive_name, config.SRC_PATH)
@@ -33,7 +34,7 @@ def build_deb(version, src_archive_name, downloaded_modules, scripts_archive_nam
 
     scripts_dir = os.path.join(source_dir, "debian")
     prepare_changelog(scripts_dir, version, revision)
-    prepare_rules(scripts_dir, downloaded_modules)
+    prepare_rules(scripts_dir, downloaded_modules, configure_params)
     prepare_nginx_dirs(scripts_dir)
 
     change_control(scripts_dir, control_file_params)
@@ -60,13 +61,13 @@ def build_deb(version, src_archive_name, downloaded_modules, scripts_archive_nam
     return os.path.join(config.SRC_PATH, package_name)
 
 
-def build_rpm(version, downloaded_modules, revision):
+def build_rpm(version, downloaded_modules, revision, configure_params):
     """
     Сборка rpm пакета
     :param version:
     :param downloaded_modules:
     :param revision:
-    :return:
+    :return: configure_params
     """
     logger.info("Building .rpm package")
     modules_dir = os.path.join(config.SRC_PATH, "modules")
@@ -77,7 +78,7 @@ def build_rpm(version, downloaded_modules, revision):
     rpms_dir = os.path.join(top_dir, "RPMS")
 
     shutil.move(modules_dir, scripts_dir)
-    prepare_rules_rpm(specs_dir, downloaded_modules, os.path.join(scripts_dir, "modules"), revision)
+    prepare_rules_rpm(specs_dir, downloaded_modules, os.path.join(scripts_dir, "modules"), revision, configure_params)
     common_utils.execute_command("rpmbuild -bb nginx.spec", specs_dir)
     package_name = None
     for file in os.listdir(os.path.join(rpms_dir, config.PLATFORM_ARCH)):
@@ -104,14 +105,16 @@ def prepare_changelog(source_dir, version, revision):
             output_file.write(line)
 
 
-def prepare_rules(source_dir, downloaded_modules):
+def prepare_rules(source_dir, downloaded_modules, configure_params):
     """
     Внесение нужных параметров в файл rules
     :param source_dir:
     :param downloaded_modules:
-    :return:
+    :return: configure_params
     """
     configure_command = ["./configure"] + config.DEFAULT_CONFIGURE_PARAMS
+    for configure_param in configure_params:
+        configure_command.append(configure_param)
     for module in downloaded_modules:
         configure_command.append("--add-module=$(MODULESDIR)/{}".format(module))
     configure_command = " ".join(configure_command)
@@ -129,16 +132,18 @@ def prepare_rules(source_dir, downloaded_modules):
                 output_file.write(config.MODULESDIR)
 
 
-def prepare_rules_rpm(source_dir, downloaded_modules, modules_dir, revision):
+def prepare_rules_rpm(source_dir, downloaded_modules, modules_dir, revision, configure_params):
     """
     Внесение правил сборки в spec файл
     :param source_dir:
     :param downloaded_modules:
     :param modules_dir:
     :param revision:
-    :return:
+    :return: configure_params
     """
     configure_command = ["./configure"] + config.DEFAULT_CONFIGURE_PARAMS
+    for configure_param in configure_params:
+        configure_command.append(configure_param)
     for module in downloaded_modules:
         configure_command.append("--add-module={}/{}".format(modules_dir, module))
     configure_command = " ".join(configure_command)

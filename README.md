@@ -56,6 +56,7 @@ modules:
     module:
       name: The name of the embedded module
       type: embedded  
+configure_params: list of custom build parameters
 ```
 The configuration file with advanced settings is located in `src/config.py`. In most cases it does not need to be changed.
 
@@ -81,7 +82,8 @@ modules:
       local_url: Путь к архиву с исходным кодом модуля
     module:
       name: Название модуля встроенного модуля
-      type: embedded  
+      type: embedded
+configure_params: список дополнительных параметров сборки
 ```
 Конфигурационный файл с расширенными настройками расположен в `src/config.py`. В большинстве случаев менять его не нужно.
 

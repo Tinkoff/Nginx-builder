@@ -47,6 +47,8 @@ def parse_yaml(file_name):
         config['control'] = None
     if not config.get('modules'):
         config['modules'] = None
+    if not config.get('configure_params'):
+        config['configure_params'] = []
     return config
 
 

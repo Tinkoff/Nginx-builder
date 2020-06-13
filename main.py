@@ -46,7 +46,8 @@ def build_deb(config, revision):
         downloaded_modules,
         scripts_archive_name,
         config["control"],
-        revision
+        revision,
+        config['configure_params']
     )
 
     return package_name
@@ -66,7 +67,8 @@ def build_rpm(config, revision):
     package_name = builder.build_rpm(
         config["nginx_version"],
         downloaded_modules,
-        revision
+        revision,
+        config['configure_params']
     )
 
     return package_name

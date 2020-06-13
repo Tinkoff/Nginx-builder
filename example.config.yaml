@@ -1,4 +1,4 @@
-nginx_version: 1.13.9
+nginx_version: 1.16.1
 output_package: rpm
 modules:
   - module:
@@ -69,3 +69,5 @@ modules:
   - module:
       name: stream_ssl_preread_module
       type: embedded
+configure_params:
+  - "--with-openssl-opt='enable-tls1_3'"
