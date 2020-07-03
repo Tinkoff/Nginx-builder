@@ -45,6 +45,7 @@ modules:
       git_url: git file URL
       git_tag: The name of the tag. (Optional)
       git_branch: The name of the branch. (Optional). If neither tag nor branch is specified, the master branch is taken by default
+      patch: Relative path to patch for source code. (Optional)
       dependencies: 
         - list of dependencies for building the module (Optional)
     module:
@@ -72,6 +73,7 @@ modules:
       git_url: URL git файла
       git_tag: название тэга. (Не обязательно)
       git_branch: название ветки. (Не обязательно). Если не указан ни tag, ни branch по умолчанию берется master ветка
+      patch: Относительный путь к патчу для исходного кода. (Не обязательно).
       dependencies: 
         - список зависимостей для сборки модуля (Не обязательно)
     module:

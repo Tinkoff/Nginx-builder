@@ -11,7 +11,7 @@ logger = logging.getLogger("builder")
 
 
 def build_deb(version, src_archive_name, downloaded_modules,
-              scripts_archive_name, control_file_params, revision, configure_params):
+              scripts_archive_name, control_file_params, revision, configure_params, patches):
     """
     Сборка deb пакета
     :param version:
@@ -20,7 +20,9 @@ def build_deb(version, src_archive_name, downloaded_modules,
     :param scripts_archive_name:
     :param control_file_params:
     :param revision:
-    :return: configure_params
+    :param configure_params:
+    :param patches:
+    :return:
     """
     logger.info("Building .deb package")
     common_utils.extract_archive(src_archive_name, config.SRC_PATH)
@@ -33,6 +35,9 @@ def build_deb(version, src_archive_name, downloaded_modules,
     shutil.move(scripts_dir, source_dir)
 
     scripts_dir = os.path.join(source_dir, "debian")
+    modules_dir = os.path.join(scripts_dir, "modules")
+
+    apply_patch(modules_dir, source_dir, patches)
     prepare_changelog(scripts_dir, version, revision)
     prepare_rules(scripts_dir, downloaded_modules, configure_params)
     prepare_nginx_dirs(scripts_dir)
@@ -67,7 +72,8 @@ def build_rpm(version, downloaded_modules, revision, configure_params):
     :param version:
     :param downloaded_modules:
     :param revision:
-    :return: configure_params
+    :param configure_params:
+    :return:
     """
     logger.info("Building .rpm package")
     modules_dir = os.path.join(config.SRC_PATH, "modules")
@@ -78,7 +84,9 @@ def build_rpm(version, downloaded_modules, revision, configure_params):
     rpms_dir = os.path.join(top_dir, "RPMS")
 
     shutil.move(modules_dir, scripts_dir)
-    prepare_rules_rpm(specs_dir, downloaded_modules, os.path.join(scripts_dir, "modules"), revision, configure_params)
+    modules_dir = os.path.join(scripts_dir, "modules")
+
+    prepare_rules_rpm(specs_dir, downloaded_modules, modules_dir, revision, configure_params)
     common_utils.execute_command("rpmbuild -bb nginx.spec", specs_dir)
     package_name = None
     for file in os.listdir(os.path.join(rpms_dir, config.PLATFORM_ARCH)):
@@ -110,7 +118,8 @@ def prepare_rules(source_dir, downloaded_modules, configure_params):
     Внесение нужных параметров в файл rules
     :param source_dir:
     :param downloaded_modules:
-    :return: configure_params
+    :param configure_params:
+    :return:
     """
     configure_command = ["./configure"] + config.DEFAULT_CONFIGURE_PARAMS
     for configure_param in configure_params:
@@ -139,7 +148,8 @@ def prepare_rules_rpm(source_dir, downloaded_modules, modules_dir, revision, con
     :param downloaded_modules:
     :param modules_dir:
     :param revision:
-    :return: configure_params
+    :param configure_params:
+    :return:
     """
     configure_command = ["./configure"] + config.DEFAULT_CONFIGURE_PARAMS
     for configure_param in configure_params:
@@ -237,3 +247,17 @@ def merge_dicts(control_file_dict, control_changes_dict):
             logger.error('Не указан параметр state для {}'.format(key))
             sys.exit(1)
     return control_file_dict
+
+
+def apply_patch(modules_dir, source_dir, patches):
+    """
+    Применение патча
+    :param modules_dir:
+    :param source_dir:
+    :param patches:
+    :return:
+    """
+    for patch in patches:
+        logger.info("Apply patch {}".format(patch))
+        patch_command = "patch -p1 < {}".format(os.path.join(modules_dir, patch))
+        common_utils.execute_command(patch_command, source_dir)
