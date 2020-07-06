@@ -333,3 +333,20 @@ def set_module_name(module_name, url):
         module_name = url[url.rfind("/") + 1:].rsplit(".", 1)[0]
 
     return module_name
+
+
+def get_patches_list(modules):
+    """
+    Получение списка патчей
+    :param modules:
+    :return:
+    """
+    nginx_patches = []
+    if modules:
+        common_utils.ensure_directory(os.path.join(config.SRC_PATH, "modules"))
+        for module in modules:
+            module = module.get('module')
+            if module.get('patch') is not None:
+                nginx_patches.append(os.path.join(module.get('name'), module.get('patch')))
+
+    return nginx_patches

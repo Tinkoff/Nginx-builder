@@ -40,6 +40,7 @@ def build_deb(config, revision):
     src_archive_name = downloader.download_source(config["nginx_version"])
     downloaded_modules = downloader.download_modules(config["modules"])
     downloader.download_dependencies_deb(config["modules"])
+    patches = downloader.get_patches_list(config["modules"])
     package_name = builder.build_deb(
         config["nginx_version"],
         src_archive_name,
@@ -47,7 +48,8 @@ def build_deb(config, revision):
         scripts_archive_name,
         config["control"],
         revision,
-        config['configure_params']
+        config['configure_params'],
+        patches
     )
 
     return package_name
