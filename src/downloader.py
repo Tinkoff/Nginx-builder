@@ -173,7 +173,7 @@ def download_module_from_local(module):
         sys.exit(1)
 
     module_name = set_module_name(module.get('name'), local_url)
-    file_name = local_url[local_url("/") + 1:]
+    file_name = local_url[local_url.rfind("/") + 1:]
     shutil.copy(local_url, os.path.join(config.SRC_PATH, "modules", file_name))
     module_name = common_utils.extract_archive(file_name, os.path.join(config.SRC_PATH, "modules"))
     return module_name
