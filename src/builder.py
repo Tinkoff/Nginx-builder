@@ -66,7 +66,7 @@ def build_deb(version, src_archive_name, downloaded_modules,
     return [ os.path.join(config.SRC_PATH, package_name) ]
 
 
-def build_rpm(version, downloaded_modules, revision, configure_params):
+def build_rpm(version, downloaded_modules, revision, configure_params, patches):
     """
     Сборка rpm пакета
     :param version:
@@ -83,11 +83,26 @@ def build_rpm(version, downloaded_modules, revision, configure_params):
     specs_dir = os.path.join(top_dir, "SPECS")
     rpms_dir = os.path.join(top_dir, "RPMS")
 
+    spec_file = "nginx.spec"
+    spec_file_orig = "nginx.spec"
+
+    if not patches is None:
+        spec_file = "nginx_patched.spec"
+        with open(os.path.join(specs_dir, spec_file), 'w') as outfile:
+            i = 0
+            for patch in patches:
+                patch_file = patch.replace("/", "_")
+                shutil.move(os.path.join(modules_dir, patch), os.path.join(scripts_dir, patch_file))
+                outfile.write("Patch{}: {}\n".format(i, patch_file))
+            with open(os.path.join(specs_dir, spec_file_orig)) as infile:
+                for line in infile:
+                    outfile.write(line)
+
     shutil.move(modules_dir, scripts_dir)
     modules_dir = os.path.join(scripts_dir, "modules")
 
     prepare_rules_rpm(specs_dir, downloaded_modules, modules_dir, revision, configure_params)
-    common_utils.execute_command("rpmbuild -bb nginx.spec", specs_dir)
+    common_utils.execute_command("rpmbuild -bb {}".format(spec_file), specs_dir)
     package_name = None
     package_debuginfo_name = None
     for file in os.listdir(os.path.join(rpms_dir, config.PLATFORM_ARCH)):
