@@ -26,7 +26,9 @@ def build(args):
     else:
         logger.error("Output package type is not valid")
         sys.exit(1)
-    publicator.public_local(package_name)
+
+    for p in package_name:
+        publicator.public_local(p)
 
 
 def build_deb(config, revision):

@@ -63,7 +63,7 @@ def build_deb(version, src_archive_name, downloaded_modules,
         if file.startswith("nginx_{}".format(version)) and file.endswith(".deb"):
             package_name = file
 
-    return os.path.join(config.SRC_PATH, package_name)
+    return [ os.path.join(config.SRC_PATH, package_name) ]
 
 
 def build_rpm(version, downloaded_modules, revision, configure_params):
@@ -89,10 +89,13 @@ def build_rpm(version, downloaded_modules, revision, configure_params):
     prepare_rules_rpm(specs_dir, downloaded_modules, modules_dir, revision, configure_params)
     common_utils.execute_command("rpmbuild -bb nginx.spec", specs_dir)
     package_name = None
+    package_debuginfo_name = None
     for file in os.listdir(os.path.join(rpms_dir, config.PLATFORM_ARCH)):
         if file.startswith("nginx-{}".format(version)) and file.endswith(".rpm"):
             package_name = file
-    return os.path.join(rpms_dir, config.PLATFORM_ARCH, package_name)
+        elif file.startswith("nginx-debuginfo-{}".format(version)) and file.endswith(".rpm"):
+            package_debuginfo_name = file
+    return [ os.path.join(rpms_dir, config.PLATFORM_ARCH, package_name), os.path.join(rpms_dir, config.PLATFORM_ARCH, package_debuginfo_name) ]
 
 
 def prepare_changelog(source_dir, version, revision):
