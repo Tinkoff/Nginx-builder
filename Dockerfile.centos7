@@ -1,6 +1,6 @@
 FROM centos:7
 
-LABEL maintainer="msaf1980@gmail.com"
+LABEL maintainer="devops@tinkoff.ru"
 
 RUN yum install -y rpmdevtools gcc make automake yum-utils git redhat-lsb-core \
     openssl-devel zlib-devel pcre-devel epel-release \
