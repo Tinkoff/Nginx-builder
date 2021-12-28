@@ -26,7 +26,9 @@ def build(args):
     else:
         logger.error("Output package type is not valid")
         sys.exit(1)
-    publicator.public_local(package_name)
+
+    for p in package_name:
+        publicator.public_local(p)
 
 
 def build_deb(config, revision):
@@ -66,11 +68,13 @@ def build_rpm(config, revision):
     downloader.download_source_rpm(config["nginx_version"])
     downloaded_modules = downloader.download_modules(config["modules"])
     downloader.download_dependencies_rpm(config["modules"])
+    patches = downloader.get_patches_list(config["modules"])
     package_name = builder.build_rpm(
         config["nginx_version"],
         downloaded_modules,
         revision,
-        config['configure_params']
+        config['configure_params'],
+        patches
     )
 
     return package_name

@@ -63,10 +63,10 @@ def build_deb(version, src_archive_name, downloaded_modules,
         if file.startswith("nginx_{}".format(version)) and file.endswith(".deb"):
             package_name = file
 
-    return os.path.join(config.SRC_PATH, package_name)
+    return [ os.path.join(config.SRC_PATH, package_name) ]
 
 
-def build_rpm(version, downloaded_modules, revision, configure_params):
+def build_rpm(version, downloaded_modules, revision, configure_params, patches):
     """
     Сборка rpm пакета
     :param version:
@@ -83,16 +83,41 @@ def build_rpm(version, downloaded_modules, revision, configure_params):
     specs_dir = os.path.join(top_dir, "SPECS")
     rpms_dir = os.path.join(top_dir, "RPMS")
 
+    spec_file = "nginx.spec"
+
+    if not patches is None:
+        # Patch spec file
+        spec_path = os.path.join(specs_dir, spec_file)
+        spec_path_patched = os.path.join(specs_dir, "nginx_patched.spec")
+        with open(os.path.join(specs_dir, spec_path_patched), 'w') as outfile:
+            i = 0
+            for patch in patches:
+                patch_file = patch.replace("/", "_")
+                shutil.move(os.path.join(modules_dir, patch), os.path.join(scripts_dir, patch_file))
+                outfile.write("Patch{}: {}\n".format(i, patch_file))
+                i += 1
+
+            with open(spec_path) as infile:
+                for line in infile:
+                    outfile.write(line)
+
+        # replace spec file with patched version
+        os.unlink(spec_path)
+        os.rename(spec_path_patched, spec_path)
+
     shutil.move(modules_dir, scripts_dir)
     modules_dir = os.path.join(scripts_dir, "modules")
 
     prepare_rules_rpm(specs_dir, downloaded_modules, modules_dir, revision, configure_params)
-    common_utils.execute_command("rpmbuild -bb nginx.spec", specs_dir)
+    common_utils.execute_command("rpmbuild -bb {}".format(spec_file), specs_dir)
     package_name = None
+    package_debuginfo_name = None
     for file in os.listdir(os.path.join(rpms_dir, config.PLATFORM_ARCH)):
         if file.startswith("nginx-{}".format(version)) and file.endswith(".rpm"):
             package_name = file
-    return os.path.join(rpms_dir, config.PLATFORM_ARCH, package_name)
+        elif file.startswith("nginx-debuginfo-{}".format(version)) and file.endswith(".rpm"):
+            package_debuginfo_name = file
+    return [ os.path.join(rpms_dir, config.PLATFORM_ARCH, package_name), os.path.join(rpms_dir, config.PLATFORM_ARCH, package_debuginfo_name) ]
 
 
 def prepare_changelog(source_dir, version, revision):
