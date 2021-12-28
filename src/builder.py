@@ -84,19 +84,26 @@ def build_rpm(version, downloaded_modules, revision, configure_params, patches):
     rpms_dir = os.path.join(top_dir, "RPMS")
 
     spec_file = "nginx.spec"
-    spec_file_orig = "nginx.spec"
 
     if not patches is None:
-        spec_file = "nginx_patched.spec"
-        with open(os.path.join(specs_dir, spec_file), 'w') as outfile:
+        # Patch spec file
+        spec_path = os.path.join(specs_dir, spec_file)
+        spec_path_patched = os.path.join(specs_dir, "nginx_patched.spec")
+        with open(os.path.join(specs_dir, spec_path_patched), 'w') as outfile:
             i = 0
             for patch in patches:
                 patch_file = patch.replace("/", "_")
                 shutil.move(os.path.join(modules_dir, patch), os.path.join(scripts_dir, patch_file))
                 outfile.write("Patch{}: {}\n".format(i, patch_file))
-            with open(os.path.join(specs_dir, spec_file_orig)) as infile:
+                i += 1
+
+            with open(spec_path) as infile:
                 for line in infile:
                     outfile.write(line)
+
+        # replace spec file with patched version
+        os.unlink(spec_path)
+        os.rename(spec_path_patched, spec_path)
 
     shutil.move(modules_dir, scripts_dir)
     modules_dir = os.path.join(scripts_dir, "modules")
