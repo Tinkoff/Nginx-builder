@@ -46,6 +46,7 @@ modules:
       git_tag: The name of the tag. (Optional)
       git_branch: The name of the branch. (Optional). If neither tag nor branch is specified, the master branch is taken by default
       patch: Relative path to patch for source code. (Optional)
+      sub_dir: Relative path to directory used for module. (Optional)
       dependencies: 
         - list of dependencies for building the module (Optional)
     module:

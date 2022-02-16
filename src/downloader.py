@@ -137,7 +137,12 @@ def download_module_from_git(module):
             logger.info("-- Downloading: {}...".format(submodule))
             submodule.update(init=True)
             logger.info("---- Done: {}/{}".format(module_name, submodule))
-    return module_name
+
+    sub_dir = module.get('sub_dir', '')
+    if sub_dir == '':
+        return module_name
+    else:
+        return os.path.join(module_name, sub_dir)
 
 
 def download_module_from_web(module):
@@ -158,7 +163,12 @@ def download_module_from_web(module):
         response = get(web_url)
         file.write(response.content)
     module_name = common_utils.extract_archive(file_name, os.path.join(config.SRC_PATH, "modules"))
-    return module_name
+
+    sub_dir = module.get('sub_dir', '')
+    if sub_dir == '':
+        return module_name
+    else:
+        return os.path.join(module_name, sub_dir)
 
 
 def download_module_from_local(module):
@@ -176,7 +186,12 @@ def download_module_from_local(module):
     file_name = local_url[local_url.rfind("/") + 1:]
     shutil.copy(local_url, os.path.join(config.SRC_PATH, "modules", file_name))
     module_name = common_utils.extract_archive(file_name, os.path.join(config.SRC_PATH, "modules"))
-    return module_name
+
+    sub_dir = module.get('sub_dir', '')
+    if sub_dir == '':
+        return module_name
+    else:
+        return os.path.join(module_name, sub_dir)
 
 
 def download_module_embedded(module):
