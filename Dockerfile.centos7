@@ -2,7 +2,7 @@ FROM centos:7
 
 LABEL maintainer="devops@tinkoff.ru"
 
-RUN yum install -y rpmdevtools gcc make automake yum-utils git redhat-lsb-core \
+RUN yum install -y rpmdevtools gcc make automake yum-utils git redhat-lsb-core which \
     openssl-devel zlib-devel pcre-devel epel-release \
     && yum install -y python3 python3-devel python3-pip \
     && yum clean all
