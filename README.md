@@ -98,7 +98,7 @@ configure_params: список дополнительных параметров
 ### ENG
 You will also need packages to compile Nginx. Their list can be seen in the Dockerfile.
 ```bash
-pip3 install -r requirements.txt
+pip3 install -r requirements\dev.txt
 ./main.py build -f [config_file].yaml -r [revision_number]
 ```
 * revision number optional parameter, used to version assemblies
@@ -106,7 +106,7 @@ pip3 install -r requirements.txt
 ### RU
 Также потребуются пакеты для компиляции Nginx. Их перечень можно увидеть в Dockerfile
 ```bash
-pip3 install -r requirements.txt
+pip3 install -r requirements\dev.txt
 ./main.py build -f [конфиг_файл].yaml -r [номер_ревизии]
 ```
 * номер ревизии опциональный параметр, служит для версионирования сборок

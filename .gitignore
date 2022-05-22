@@ -3,3 +3,4 @@
 *.deb
 *.rpm
 *.properties
+venv
