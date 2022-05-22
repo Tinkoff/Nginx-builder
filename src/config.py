@@ -1,6 +1,6 @@
-import distro
 import platform
 
+import distro
 
 # Параметры системы
 OS_RELEASE = distro.codename().split(' ')[0].lower()
@@ -10,12 +10,12 @@ OS_VERSION = distro.major_version()
 
 # Адрес загрузки исходного кода nginx
 NGINX_URL = "http://nginx.org/download"
-NGINX_SRPM_URL_MAINLINE = "http://nginx.org/packages/mainline/centos/{}/SRPMS".format(OS_VERSION)
-NGINX_SRPM_URL_STABLE = "http://nginx.org/packages/centos/{}/SRPMS".format(OS_VERSION)
+NGINX_SRPM_URL_MAINLINE = f"http://nginx.org/packages/mainline/centos/{OS_VERSION}/SRPMS"
+NGINX_SRPM_URL_STABLE = f"http://nginx.org/packages/centos/{OS_VERSION}/SRPMS"
 
 # Архив со скриптами для создания пакета
-DEB_PACKAGE_SCRIPTS_URL_MAINLINE = "http://nginx.org/packages/mainline/{}/pool/nginx/n/nginx".format(OS_DISTRIBUTION)
-DEB_PACKAGE_SCRIPTS_URL_STABLE = "http://nginx.org/packages/{}/pool/nginx/n/nginx".format(OS_DISTRIBUTION)
+DEB_PACKAGE_SCRIPTS_URL_MAINLINE = f"http://nginx.org/packages/mainline/{OS_DISTRIBUTION}/pool/nginx/n/nginx"
+DEB_PACKAGE_SCRIPTS_URL_STABLE = f"http://nginx.org/packages/{OS_DISTRIBUTION}/pool/nginx/n/nginx"
 
 # Путь до директории сборки пакета
 SRC_PATH = "/usr/src/nginx"

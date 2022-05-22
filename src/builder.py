@@ -1,11 +1,12 @@
+import logging
 import os
-import sys
 import shutil
+import sys
 from collections import OrderedDict
+
+from src import common_utils
 from src import config
 from src import config_parser
-from src import common_utils
-import logging
 
 logger = logging.getLogger("builder")
 
@@ -28,7 +29,7 @@ def build_deb(version, src_archive_name, downloaded_modules,
     common_utils.extract_archive(src_archive_name, config.SRC_PATH)
     common_utils.extract_archive(scripts_archive_name, config.SRC_PATH)
 
-    source_dir = os.path.join(config.SRC_PATH, "nginx-{}".format(version))
+    source_dir = os.path.join(config.SRC_PATH, f"nginx-{version}")
     modules_dir = os.path.join(config.SRC_PATH, "modules")
     scripts_dir = os.path.join(config.SRC_PATH, "debian")
     shutil.move(modules_dir, scripts_dir)
@@ -45,10 +46,8 @@ def build_deb(version, src_archive_name, downloaded_modules,
     change_control(scripts_dir, control_file_params)
 
     logger.info("Running 'dh_make'...")
-    dh_make_command = "dh_make --copyright {} -e {} --createorig -s -y -p nginx_{}".format(
-        config.LICENSE_TYPE,
-        config.EMAIL_CREATOR,
-        version
+    dh_make_command = (
+        f"dh_make --copyright {config.LICENSE_TYPE} -e {config.EMAIL_CREATOR} --createorig -s -y -p nginx_{version}"
     )
     common_utils.execute_command(dh_make_command, source_dir)
 
@@ -60,10 +59,10 @@ def build_deb(version, src_archive_name, downloaded_modules,
 
     package_name = None
     for file in os.listdir(config.SRC_PATH):
-        if file.startswith("nginx_{}".format(version)) and file.endswith(".deb"):
+        if file.startswith(f"nginx_{version}") and file.endswith(".deb"):
             package_name = file
 
-    return [ os.path.join(config.SRC_PATH, package_name) ]
+    return [os.path.join(config.SRC_PATH, package_name)]
 
 
 def build_rpm(version, downloaded_modules, revision, configure_params, patches):
@@ -94,7 +93,7 @@ def build_rpm(version, downloaded_modules, revision, configure_params, patches):
             for patch in patches:
                 patch_file = patch.replace("/", "_")
                 shutil.move(os.path.join(modules_dir, patch), os.path.join(scripts_dir, patch_file))
-                outfile.write("Patch{}: {}\n".format(i, patch_file))
+                outfile.write(f"Patch{i}: {patch_file}\n")
                 i += 1
 
             with open(spec_path) as infile:
@@ -109,15 +108,18 @@ def build_rpm(version, downloaded_modules, revision, configure_params, patches):
     modules_dir = os.path.join(scripts_dir, "modules")
 
     prepare_rules_rpm(specs_dir, downloaded_modules, modules_dir, revision, configure_params)
-    common_utils.execute_command("rpmbuild -bb {}".format(spec_file), specs_dir)
+    common_utils.execute_command(f"rpmbuild -bb {spec_file}", specs_dir)
     package_name = None
     package_debuginfo_name = None
     for file in os.listdir(os.path.join(rpms_dir, config.PLATFORM_ARCH)):
-        if file.startswith("nginx-{}".format(version)) and file.endswith(".rpm"):
+        if file.startswith(f"nginx-{version}") and file.endswith(".rpm"):
             package_name = file
-        elif file.startswith("nginx-debuginfo-{}".format(version)) and file.endswith(".rpm"):
+        elif file.startswith(f"nginx-debuginfo-{version}") and file.endswith(".rpm"):
             package_debuginfo_name = file
-    return [ os.path.join(rpms_dir, config.PLATFORM_ARCH, package_name), os.path.join(rpms_dir, config.PLATFORM_ARCH, package_debuginfo_name) ]
+    return [
+        os.path.join(rpms_dir, config.PLATFORM_ARCH, package_name),
+        os.path.join(rpms_dir, config.PLATFORM_ARCH, package_debuginfo_name),
+    ]
 
 
 def prepare_changelog(source_dir, version, revision):
@@ -128,13 +130,13 @@ def prepare_changelog(source_dir, version, revision):
     :param revision:
     :return:
     """
-    with open('{}/changelog'.format(source_dir), 'r') as input_file:
+    with open(f'{source_dir}/changelog', 'r') as input_file:
         content_file = input_file.readlines()
-    with open('{}/changelog'.format(source_dir), 'w') as output_file:
-        replace_line = "nginx ({}-1~".format(version)
+    with open(f'{source_dir}/changelog', 'w') as output_file:
+        replace_line = f"nginx ({version}-1~"
         for line in content_file:
             if replace_line in line:
-                line = "nginx ({}-{}) {}; urgency=low\n".format(version, revision, config.OS_RELEASE)
+                line = f"nginx ({version}-{revision}) {config.OS_RELEASE}; urgency=low\n"
             output_file.write(line)
 
 
@@ -150,15 +152,15 @@ def prepare_rules(source_dir, downloaded_modules, configure_params):
     for configure_param in configure_params:
         configure_command.append(configure_param)
     for module in downloaded_modules:
-        configure_command.append("--add-module=$(MODULESDIR)/{}".format(module))
+        configure_command.append(f"--add-module=$(MODULESDIR)/{module}")
     configure_command = " ".join(configure_command)
 
-    with open('{}/rules'.format(source_dir), 'r') as input_file:
+    with open(f'{source_dir}/rules', 'r') as input_file:
         content_file = input_file.readlines()
-    with open('{}/rules'.format(source_dir), 'w') as output_file:
+    with open(f'{source_dir}/rules', 'w') as output_file:
         for line in content_file:
             if "CFLAGS=" in line:
-                line = 'CFLAGS="" {}'.format(configure_command + "\n")
+                line = f'CFLAGS="" {configure_command}\n'
             if "default.conf" in line:
                 continue
             output_file.write(line)
@@ -180,17 +182,17 @@ def prepare_rules_rpm(source_dir, downloaded_modules, modules_dir, revision, con
     for configure_param in configure_params:
         configure_command.append(configure_param)
     for module in downloaded_modules:
-        configure_command.append("--add-module={}/{}".format(modules_dir, module))
+        configure_command.append(f"--add-module={modules_dir}/{module}")
     configure_command = " ".join(configure_command)
 
-    with open('{}/nginx.spec'.format(source_dir), 'r') as input_file:
+    with open(f'{source_dir}/nginx.spec', 'r') as input_file:
         content_file = input_file.readlines()
-    with open('{}/nginx.spec'.format(source_dir), 'w') as output_file:
+    with open(f'{source_dir}/nginx.spec', 'w') as output_file:
         for line in content_file:
             if "./configure" in line:
                 line = configure_command
             if "%define main_release" in line:
-                line = "%define main_release {}.ngx".format(revision)
+                line = f"%define main_release {revision}.ngx"
             output_file.write(line)
 
 
@@ -200,9 +202,9 @@ def prepare_nginx_dirs(source_dir):
     :param source_dir:
     :return:
     """
-    with open('{}/nginx.dirs'.format(source_dir), 'r') as input_file:
+    with open(f'{source_dir}/nginx.dirs', 'r') as input_file:
         content_file = input_file.readlines()
-    with open('{}/nginx.dirs'.format(source_dir), 'w') as output_file:
+    with open(f'{source_dir}/nginx.dirs', 'w') as output_file:
         for line in content_file:
             output_file.write(line)
             if "/var/log/nginx" in line:
@@ -218,14 +220,14 @@ def change_control(source_dir, control_changes):
     """
     if not control_changes:
         return False
-    parsed_control_file = config_parser.parse_control_file('{}/control'.format(source_dir))
+    parsed_control_file = config_parser.parse_control_file(f'{source_dir}/control')
     repaired_keys = repair_keys(control_changes)
     merged_dict = merge_dicts(parsed_control_file, repaired_keys)
 
-    with open('{}/control'.format(source_dir), 'w') as output_file:
+    with open(f'{source_dir}/control', 'w') as output_file:
         for key in merged_dict:
             for k in merged_dict[key]:
-                output_file.write("{}: {}\n".format(k, merged_dict[key][k]))
+                output_file.write(f"{k}: {merged_dict[key][k]}\n")
             output_file.write("\n")
     return True
 
@@ -243,7 +245,7 @@ def repair_keys(block):
             z = ''.join(x for x in key.title() if not x.isspace()).replace('_', '-')
             repaired_keys[z] = block_part[key]
         index = list(repaired_keys)[0]
-        index_q = '{}_{}'.format(index, repaired_keys[index])
+        index_q = f'{index}_{repaired_keys[index]}'
         repaired_keys_dict[index_q] = repaired_keys
     return repaired_keys_dict
 
@@ -260,7 +262,7 @@ def merge_dicts(control_file_dict, control_changes_dict):
             state = control_changes_dict[key]['State']
             changes = control_changes_dict[key]
             index = list(changes)[0]
-            index_q = '{}_{}'.format(index, changes[index])
+            index_q = f'{index}_{changes[index]}'
             if state == 'present':
                 del changes['State']
                 control_file_dict[index_q] = changes
@@ -269,7 +271,7 @@ def merge_dicts(control_file_dict, control_changes_dict):
                     if k not in ['State', 'Source', 'Package'] and control_file_dict[index_q][k]:
                         control_file_dict[index_q][k] = str.join(', ', (control_file_dict[index_q][k], changes[k]))
         except:
-            logger.error('Не указан параметр state для {}'.format(key))
+            logger.error(f'Не указан параметр state для {key}')
             sys.exit(1)
     return control_file_dict
 
@@ -283,6 +285,6 @@ def apply_patch(modules_dir, source_dir, patches):
     :return:
     """
     for patch in patches:
-        logger.info("Apply patch {}".format(patch))
-        patch_command = "patch -p1 < {}".format(os.path.join(modules_dir, patch))
+        logger.info(f"Apply patch {patch}")
+        patch_command = f"patch -p1 < {os.path.join(modules_dir, patch)}"
         common_utils.execute_command(patch_command, source_dir)
