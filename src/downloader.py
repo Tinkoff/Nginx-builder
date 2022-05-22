@@ -1,14 +1,16 @@
-from requests import get
-from packaging import version
-from src import config
-from src import common_utils
-import git
-import os
-import sys
-import shutil
 import logging
+import os
+import shutil
+import sys
+
+import git
 import requests
 from bs4 import BeautifulSoup
+from packaging import version
+from requests import get
+
+from src import common_utils
+from src import config
 
 logger = logging.getLogger("builder")
 
@@ -21,9 +23,9 @@ def download_source(src_version):
     :return file_name:
     """
     logger.info("Downloading nginx src...")
-    file_name = "nginx-{}.tar.gz".format(src_version)
-    url = "{}/{}".format(config.NGINX_URL, file_name)
-    logger.info("--> {}".format(url))
+    file_name = f"nginx-{src_version}.tar.gz"
+    url = f"{config.NGINX_URL}/{file_name}"
+    logger.info(f"--> {url}")
     with open(os.path.join(config.SRC_PATH, file_name), "wb") as file:
         response = get(url)
         file.write(response.content)
@@ -42,20 +44,20 @@ def get_src_rpm_filename(url, src_version):
         response_text = response.text
         soup = BeautifulSoup(response_text, 'html.parser')
         for node in soup.find_all('a'):
-            if node.get('href').endswith('rpm') and "nginx-{}-".format(src_version) in node.get('href'):
+            if node.get('href').endswith('rpm') and f"nginx-{src_version}-" in node.get('href'):
                 file_name = node.get('href')
 
     elif 400 <= response.status_code < 500:
-        logger.error(u"{} Client Error: {} for url: {}".format(response.status_code, response.reason, url))
+        logger.error(f"{response.status_code} Client Error: {response.reason} for url: {url}")
         sys.exit(1)
     elif 500 <= response.status_code < 600:
-        logger.error(u"{} Server Error: {} for url: {}".format(response.status_code, response.reason, url))
+        logger.error(f"{response.status_code} Server Error: {response.reason} for url: {url}")
         sys.exit(1)
 
     if 'file_name' in locals():
         return file_name
     else:
-        logger.error("Cannot find nginx source rpm(SRPM) with version {} in url {}".format(src_version, url))
+        logger.error(f"Cannot find nginx source rpm(SRPM) with version {src_version} in url {url}")
         sys.exit(1)
 
 
@@ -71,10 +73,7 @@ def download_source_rpm(src_version):
         nginx_srpm_url = config.NGINX_SRPM_URL_STABLE
 
     file_name = get_src_rpm_filename(nginx_srpm_url, src_version)
-    common_utils.execute_command("rpm --upgrade --verbose --hash {}/{}".format(
-        nginx_srpm_url,
-        file_name
-    ), os.getcwd())
+    common_utils.execute_command(f"rpm --upgrade --verbose --hash {nginx_srpm_url}/{file_name}", os.getcwd())
 
 
 def download_modules(modules):
@@ -121,22 +120,22 @@ def download_module_from_git(module):
     git_tag = module.get('git_tag')
 
     if git_tag:
-        logger.info("Module {} will download by tag".format(module_name))
+        logger.info(f"Module {module_name} will download by tag")
         downloaded_git_branchortag = git_tag
     elif git_branch:
-        logger.info("Module {} will download by branch".format(module_name))
+        logger.info(f"Module {module_name} will download by branch")
         downloaded_git_branchortag = git_branch
 
     module_dir = os.path.join(config.SRC_PATH, "modules", module_name)
     r = repo.clone_from(git_url, module_dir, branch=downloaded_git_branchortag)
-    logger.info("-- Done: {}".format(module_name))
+    logger.info(f"-- Done: {module_name}")
 
     if r.submodules:
-        logger.info("-- Checking for {}/submodules...".format(module_name))
+        logger.info(f"-- Checking for {module_name}/submodules...")
         for submodule in r.submodules:
-            logger.info("-- Downloading: {}...".format(submodule))
+            logger.info(f"-- Downloading: {submodule}...")
             submodule.update(init=True)
-            logger.info("---- Done: {}/{}".format(module_name, submodule))
+            logger.info(f"---- Done: {module_name}/{submodule}")
     return module_name
 
 
@@ -153,7 +152,7 @@ def download_module_from_web(module):
 
     module_name = set_module_name(module.get('name'), web_url)
     file_name = web_url[web_url.rfind("/") + 1:]
-    logger.info("Module {} will downloading".format(module_name))
+    logger.info(f"Module {module_name} will downloading")
     with open(os.path.join(config.SRC_PATH, "modules", file_name), "wb") as file:
         response = get(web_url)
         file.write(response.content)
@@ -186,7 +185,7 @@ def download_module_embedded(module):
     :return:
     """
     if module.get('name') is not None:
-        config.DEFAULT_CONFIGURE_PARAMS.append("--with-{}".format(module.get('name')))
+        config.DEFAULT_CONFIGURE_PARAMS.append(f"--with-{module.get('name')}")
 
 
 def download_package_scripts_deb(src_version):
@@ -195,28 +194,19 @@ def download_package_scripts_deb(src_version):
     :return file_name:
     """
     common_utils.ensure_directory(config.SRC_PATH)
-    deb_package_scripts_filename = "nginx_{}-1~{}.debian.tar.xz".format(
-        src_version,
-        config.OS_RELEASE
-    )
-    deb_package_scripts_url = "{}/{}".format(
-        config.DEB_PACKAGE_SCRIPTS_URL_MAINLINE,
-        deb_package_scripts_filename
-    )
+    deb_package_scripts_filename = f"nginx_{src_version}-1~{config.OS_RELEASE}.debian.tar.xz"
+    deb_package_scripts_url = f"{config.DEB_PACKAGE_SCRIPTS_URL_MAINLINE}/{deb_package_scripts_filename}"
     if version.parse(src_version).release[1] % 2 == 0:
-        deb_package_scripts_url = "{}/{}".format(
-            config.DEB_PACKAGE_SCRIPTS_URL_STABLE,
-            deb_package_scripts_filename
-        )
+        deb_package_scripts_url = f"{config.DEB_PACKAGE_SCRIPTS_URL_STABLE}/{deb_package_scripts_filename}"
 
     logger.info("Download scripts for build deb package")
     with open(os.path.join(config.SRC_PATH, deb_package_scripts_filename), "wb") as file:
         response = get(deb_package_scripts_url)
         if 400 <= response.status_code < 500:
-            logger.error(u"{} Client Error: {} for url: {}".format(response.status_code, response.reason, deb_package_scripts_url))
+            logger.error(f"{response.status_code} Client Error: {response.reason} for url: {deb_package_scripts_url}")
             sys.exit(1)
         elif 500 <= response.status_code < 600:
-            logger.error(u"{} Server Error: {} for url: {}".format(response.status_code, response.reason, deb_package_scripts_url))
+            logger.error(f"{response.status_code} Server Error: {response.reason} for url: {deb_package_scripts_url}")
             sys.exit(1)
         file.write(response.content)
 
@@ -251,7 +241,7 @@ def install_deb_packages(all_deps):
     for dependency in all_deps:
         pkg = cache[dependency]
         if pkg.is_installed:
-            logger.warning("'{}' already installed".format(dependency))
+            logger.warning(f"'{dependency}' already installed")
             continue
 
         pkg.mark_install()

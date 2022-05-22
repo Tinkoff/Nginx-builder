@@ -1,10 +1,10 @@
-import tarfile
-import zipfile
-import subprocess
-import sys
-import os
 import getpass
 import logging
+import os
+import subprocess
+import sys
+import tarfile
+import zipfile
 
 logger = logging.getLogger("builder")
 
@@ -59,7 +59,7 @@ def extract_archive(file_name, dest_path):
         extracted_file = zip.namelist()[0]
         zip.close()
     else:
-        logger.error("Archive format {} is not valid".format(file_name))
+        logger.error(f"Archive format {file_name} is not valid")
 
     return extracted_file.rstrip('/')
 
