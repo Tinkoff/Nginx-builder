@@ -1,0 +1,7 @@
+venv
+.idea/
+*.pyc
+*.deb
+*.rpm
+*.properties
+

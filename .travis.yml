@@ -3,9 +3,9 @@ sudo: required
 # Only build only master branch and tags
 branches:
   only:
-  - master
-  - /^v\d+\.\d+(\.\d+)?(-\S*)?$/
- 
+    - master
+    - /^v\d+\.\d+(\.\d+)?(-\S*)?$/
+
 
 services:
   - docker
